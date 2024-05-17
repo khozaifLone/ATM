@@ -8,12 +8,26 @@ import java.util.Map;
  */
 public class AtmOperation {
 
+    /**
+     * Injectable ATM implementation, allows easy swapping of the ATM implementation
+     */
     private final Atm atm;
 
+    /**
+     * Inject relevant ATM implementation
+     *
+     * @param atm ATM implementation
+     */
     public AtmOperation(Atm atm) {
         this.atm = atm;
     }
 
+    /**
+     * Withdraw cash from the ATM
+     *
+     * @param amount Amount to be withdrawn
+     * @param txnId  Unique transaction id
+     */
     public void withDrawCash(int amount, String txnId) {
         System.out.println("TxnId: " + txnId + " Amount: " + amount);
         Map<String, List<WithDrawTxn>> withDrawnCash = atm.withdrawCash(amount, txnId);
