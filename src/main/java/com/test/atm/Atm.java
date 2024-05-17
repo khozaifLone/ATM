@@ -12,27 +12,28 @@ public class Atm {
 
     Map<Integer, Integer> atmCashMap = new TreeMap<>();
     ReentrantLock lock = new ReentrantLock();
+
     public Atm() {
         atmCashMap.put(500, 20);
         atmCashMap.put(200, 30);
         atmCashMap.put(100, 20);
     }
 
-    public Map<String, List<WithDrawTxn>> withDrawCash(int amount, String TxnId) {
+    public Map<String, List<WithDrawTxn>> withdrawCash(int amount, String TxnId) {
         lock.lock();
         Map<String, List<WithDrawTxn>> withdrawnCash = new HashMap<>();
         try {
             //validate atm balance then proceed with withdrawal
-            validateAmountinATM(amount);
+            validateAmountInATM(amount);
             // Get denominations in reverse order, since we need to consume higher ones first
-            List<Integer> atmdenominations = atmCashMap.keySet().stream().sorted(Comparator.reverseOrder()).toList();
+            List<Integer> atmDenominations = atmCashMap.keySet().stream().sorted(Comparator.reverseOrder()).toList();
             List<WithDrawTxn> denomWithDrawList = new ArrayList<>();
-            for (Integer denom : atmdenominations) {
-                if (atmCashMap.get(denom) != 0 && amount != 0) {
-                    int maxDenomCount = amount / denom;
-                    int denCount = Math.min(maxDenomCount, atmCashMap.get(denom));
-                    amount -= (denCount * denom);
-                    denomWithDrawList.add(new WithDrawTxn(denom, denCount));
+            for (Integer currentDenomination : atmDenominations) {
+                if (atmCashMap.get(currentDenomination) != 0 && amount != 0) {
+                    int maxDenominationCount = amount / currentDenomination;
+                    int allowedDenominationCount = Math.min(maxDenominationCount, atmCashMap.get(currentDenomination));
+                    amount -= (allowedDenominationCount * currentDenomination);
+                    denomWithDrawList.add(new WithDrawTxn(currentDenomination, allowedDenominationCount));
                 }
                 withdrawnCash.put(TxnId, denomWithDrawList);
             }
@@ -46,7 +47,7 @@ public class Atm {
         return withdrawnCash;
     }
 
-    private void validateAmountinATM(int amount) {
+    private void validateAmountInATM(int amount) {
         int balance = atmCashMap.entrySet().stream().mapToInt(den -> den.getKey() * den.getValue()).sum();
         if (balance == 0) {
             throw new RuntimeException("There is no cash in ATM");
@@ -55,6 +56,7 @@ public class Atm {
             throw new RuntimeException("Atm balance is low");
         }
     }
+
     public int getAtmBalance() {
         return atmCashMap.entrySet().stream().mapToInt(den -> den.getKey() * den.getValue()).sum();
     }
