@@ -2,8 +2,11 @@ package com.test.atm;
 
 import java.util.UUID;
 
+/**
+ * Driver for te ATM implementation for testing ATM implementation
+ */
 public class Main {
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException { // In application, such exceptions can be handled by Global handlers and makes our operations transactional
         //Initialize ATM with cash
         Atm atm = new Atm();
         AtmOperation atmOperation = new AtmOperation(atm);

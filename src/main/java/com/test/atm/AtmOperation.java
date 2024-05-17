@@ -3,6 +3,9 @@ package com.test.atm;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Proxy over the base ATM implementation, works as a facade for the ATM operations and thus allows decoupling between the client and the ATM.
+ */
 public class AtmOperation {
 
     private final Atm atm;
