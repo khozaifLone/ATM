@@ -5,12 +5,13 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Atm {
 
-    Map<Integer, Integer> atmCashMap = new TreeMap<>();
+    TreeMap<Integer, Integer> atmCashMap = new TreeMap<>();
     ReentrantLock lock = new ReentrantLock();
 
     public Atm() {
@@ -23,10 +24,10 @@ public class Atm {
         lock.lock();
         Map<String, List<WithDrawTxn>> withdrawnCash = new HashMap<>();
         try {
-            //validate atm balance then proceed with withdrawal
-            validateAmountInATM(amount);
+            // Validate withdrawal amount, if valid then proceed with withdrawal
+            validateExpectedAmount(amount);
             // Get denominations in reverse order, since we need to consume higher ones first
-            List<Integer> atmDenominations = atmCashMap.keySet().stream().sorted(Comparator.reverseOrder()).toList();
+            Set<Integer> atmDenominations = atmCashMap.descendingKeySet();
             List<WithDrawTxn> denomWithDrawList = new ArrayList<>();
             for (Integer currentDenomination : atmDenominations) {
                 if (atmCashMap.get(currentDenomination) != 0 && amount != 0) {
@@ -37,18 +38,30 @@ public class Atm {
                 }
                 withdrawnCash.put(TxnId, denomWithDrawList);
             }
+
             //Update atm Cash in Atm Map after withdrawal
             withdrawnCash.values().forEach(
                     withDrawTxns -> withDrawTxns.forEach(txn ->
-                            atmCashMap.put(txn.denomination(), atmCashMap.get(txn.denomination()) - txn.denCount())));
+                            atmCashMap.put(
+                                    txn.denomination(),
+                                    atmCashMap.get(txn.denomination()) - txn.denCount())
+                    ));
         } finally {
             lock.unlock();
         }
         return withdrawnCash;
     }
 
-    private void validateAmountInATM(int amount) {
-        int balance = atmCashMap.entrySet().stream().mapToInt(den -> den.getKey() * den.getValue()).sum();
+    private void validateExpectedAmount(int amount) {
+        if (amount == 0) {
+            throw new RuntimeException("Amount should be greater than 0");
+        }
+        if (amount % 10 != 0) {
+            throw new RuntimeException("Amount should be multiple of 10");
+        }
+        int balance = atmCashMap.entrySet().stream()
+                .mapToInt(den -> den.getKey() * den.getValue())
+                .sum();
         if (balance == 0) {
             throw new RuntimeException("There is no cash in ATM");
         }
@@ -57,7 +70,9 @@ public class Atm {
         }
     }
 
-    public int getAtmBalance() {
-        return atmCashMap.entrySet().stream().mapToInt(den -> den.getKey() * den.getValue()).sum();
+    public long getAtmBalance() {
+        return atmCashMap.entrySet().stream()
+                .mapToLong(den -> (long) den.getKey() * den.getValue())
+                .sum();
     }
 }

@@ -1,12 +1,12 @@
 package com.test.atm;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class AtmTest {
 
@@ -31,15 +31,43 @@ class AtmTest {
         assertEquals(2, response.get("Txn1").size());
     }
 
-    @Disabled
     @Test
     void withdrawCash_whenInsufficientAmount_thenDeny() {
         Atm atm = new Atm();
-        assertThrows(RuntimeException.class, () -> atm.withdrawCash(10000, "Txn1"));
+        atm.atmCashMap.clear();
+        atm.atmCashMap.put(500, 1);
+        assertThrows(RuntimeException.class, () -> atm.withdrawCash(Integer.MAX_VALUE, "Txn1"));
     }
 
-    @Disabled
     @Test
-    void getAtmBalance() {
+    void withdrawCash_whenAtmBalanceIsZero_thenThrowError() {
+        Atm atm = new Atm();
+        atm.atmCashMap.clear();
+        assertThrows(RuntimeException.class, () -> atm.withdrawCash(500, "Txn1"));
+    }
+
+    @Test
+    void withdrawCash_whenAmountIsZero_thenThrowError() {
+        Atm atm = new Atm();
+        assertThrows(RuntimeException.class, () -> atm.withdrawCash(0, "Txn1"));
+    }
+
+    @Test
+    void withdrawCash_whenAmountIsNotMultipleOf10_thenThrowError() {
+        Atm atm = new Atm();
+        assertThrows(RuntimeException.class, () -> atm.withdrawCash(0, "Txn1"));
+    }
+
+    @Test
+    void getAtmBalance_whenDefaultBalance_thenReturn18K() {
+        Atm atm = new Atm();
+        assertEquals(18_000, atm.getAtmBalance());
+    }
+
+    @Test
+    void getAtmBalance_whenEmptyBalance_thenReturnZero() {
+        Atm atm = new Atm();
+        atm.atmCashMap.clear();
+        assertEquals(0, atm.getAtmBalance());
     }
 }
